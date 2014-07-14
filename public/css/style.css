@@ -1,0 +1,51 @@
+@import url(http://fonts.googleapis.com/css?family=Titillium+Web:400,200,700);
+
+body{
+	background: #22313F;
+}
+
+.jumbotron {
+	background: #22A7F0;
+	text-align: center;
+}
+
+#logo{
+	font-size: 40px;
+	color: #ffffff;
+	font-family: 'Titillium Web', sans-serif;
+	font-weight: 400;
+	text-align: center;
+}
+
+#logo-caption{
+	font-size: 16px;
+	display: block;
+}
+
+.textbox {
+	border:0px;
+	border-bottom: 5px solid #1E8BC3;
+	font-size: 16px;
+	padding: 10px;
+	min-width: 400px;
+	text-align: center;
+}
+
+.textbox-button {
+	padding: 10px;
+	background: #F4D03F;
+	display: inline-block;
+	cursor: pointer;
+	font-size: 16px;
+	border-bottom: 5px solid #1E8BC3;
+}
+
+#result-container {
+	padding: 20px;
+}
+
+#result {
+	font-size: 16px;
+	font-weight: 700;
+	color: #ffffff;
+}
