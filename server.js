@@ -28,21 +28,25 @@ app.use(bodyParser.json()); //Parse JSON
 	Check code and redirect to website
 ***********************************************************/
 app.get('/:code', function(req, res) {
-
+	console.log('/code');
     var code = req.params.code;
-    console.log(code);
+    console.log(req.params.code);
 
     request.post(builtAPI, function(error, response, body) {
         var info = JSON.parse(body);
 
-        console.log( "Redirect to " + info.objects[0].url );
-        res.redirect(302, info.objects[0].url);
+        if(info.objects.length > 0){
+        	console.log( "Redirect to " + info.objects[0].url );
+        	res.redirect(302, info.objects[0].url);
+        } else {
+        	res.end();
+        }
 
     }).form({
-        "_method": "get",
-        "query": {
-            "code": code
-        }
+            "_method": "get",
+            "query": {
+                "code": code
+            }
     });
 
 });
@@ -52,7 +56,7 @@ app.get('/:code', function(req, res) {
 	Create Code Route 
 ************************************************************/
 app.post('/create', function(req, res, next) {
-    
+    console.log('/create');
     /**********************************
 	 Get Vaid URL or else throw error
     **********************************/
@@ -62,6 +66,7 @@ app.post('/create', function(req, res, next) {
 
     		//Prefix `http://` if not present
     		if( url.indexOf(':') < 0 ){ url = "http://" + url; }
+
     		findUrl(url);
     	} else {
     		res.send({"error" : "url not valid"});
