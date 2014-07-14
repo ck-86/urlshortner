@@ -16,7 +16,7 @@ var builtAPI = {
 };
 
 
-var PORT = process.argv.slice(2); //Get PORT No. as argument
+var PORT = process.argv.slice(2)[0]; //Get PORT No. as argument
 
 /* Express Config */
 var app = express();
@@ -25,28 +25,67 @@ app.use(bodyParser.json()); //Parse JSON
 
 
 /***********************************************************
-	Create Route 
+	Check code and redirect to website
+***********************************************************/
+app.get('/:code', function(req, res) {
+
+    var code = req.params.code;
+    console.log(code);
+
+    request.post(builtAPI, function(error, response, body) {
+        var info = JSON.parse(body);
+
+        console.log( "Redirect to " + info.objects[0].url );
+        res.redirect(302, info.objects[0].url);
+
+    }).form({
+        "_method": "get",
+        "query": {
+            "code": code
+        }
+    });
+
+});
+
+
+/***********************************************************
+	Create Code Route 
 ************************************************************/
 app.post('/create', function(req, res, next) {
-    var url = req.body.url;
+    
+    /**********************************
+	 Get Vaid URL or else throw error
+    **********************************/
+    	var url = req.body.url;
+    	
+    	if( isUrlValid(url) ){
+
+    		//Prefix `http://` if not present
+    		if( url.indexOf(':') < 0 ){ url = "http://" + url; }
+    		findUrl(url);
+    	} else {
+    		res.send({"error" : "url not valid"});
+    	}
+
+
 
     /*******************************************
 		Check if URL is already present, if so
 		then return `url code`
     ********************************************/
-    function checkUrl(longUrl) {
+    function findUrl(longUrl) {
         request.post(builtAPI, function(error, response, body) {
             var info = JSON.parse(body);
 
             if (info.objects.length == 0) {
                 var newCode = generateCode();
-                getUniqueCode(newCode);
+                saveUrlCode(newCode);
 
             } else {
                 // sending code 
                 res.json({
-                	"uid" : info.objects[0].uid,
-                    "code" : info.objects[0].code
+                    "uid": info.objects[0].uid,
+                    "code": info.objects[0].code
                 });
             }
 
@@ -56,8 +95,7 @@ app.post('/create', function(req, res, next) {
                 "url": url
             }
         });
-    }
-    checkUrl(url);
+    };
 
 
     /********************************
@@ -71,7 +109,7 @@ app.post('/create', function(req, res, next) {
     /*******************************
 		Check if code is unique
     *******************************/
-    function getUniqueCode(code) {
+    function saveUrlCode(code) {
         request.post(builtAPI, function(error, response, body) {
             var info = JSON.parse(body);
 
@@ -82,9 +120,12 @@ app.post('/create', function(req, res, next) {
             	*****************************************************/
                 request.post(builtAPI, function(error, response, body) {
                     var info = JSON.parse(body);
-                    console.log(info);
+
+                    	//Prefix `http://` is not available
+                    	if( url.indexOf(':') < 0 ){ url = "http://" + url; };
+
                     res.json({
-                    	"uid" : info.object.uid,
+                        "uid": info.object.uid,
                         "code": info.object.code
                     });
                 }).form({
@@ -95,11 +136,8 @@ app.post('/create', function(req, res, next) {
                 });
 
             } else {
-                console.log(url);
-                console.log("This code is reserved. - " + code);
-
                 var anotherCode = generateCode();
-                getUniqueCode(anotherCode);
+                saveUrlCode(anotherCode);
             }
 
         }).form({
@@ -109,20 +147,26 @@ app.post('/create', function(req, res, next) {
             }
         });
     };
-
-
-    /***************************
-		Start Here
-    ***************************/
-    //var code = generateCode();
-    //getUniqueCode(code);
-    // checkUrl( url );
 });
 
-app.post('/test', function(req, res, next) {
-    res.send();
+app.get('/test', function(req, res, next) {
+    res.send("TEST");
 })
 
-app.listen(PORT[0], function() {
-    console.log('Server Listening On Port ' + PORT[0]);
+app.listen(PORT, function() {
+    console.log('Server Listening On Port ' + PORT);
 });
+
+
+/*****************************************
+	URL Validator
+*****************************************/
+function isUrlValid(url){
+    var RegExp = /^((http|https|ftp):\/\/)?()+[a-zA-Z0-9\-\.]{2,}\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?/;
+
+    if(RegExp.test(url)){
+        return true;
+    }else{
+        return false;
+    }
+};
