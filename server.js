@@ -28,9 +28,15 @@ app.use(bodyParser.json()); //Parse JSON
 	Check code and redirect to website
 ***********************************************************/
 app.get('/:code', function(req, res) {
-	console.log('/code');
+
     var code = req.params.code;
-    console.log(req.params.code);
+    var plusSign = code[code.length - 1];
+    
+
+    if(plusSign === '+'){
+        res.send("Show Status");
+    }
+
 
     request.post(builtAPI, function(error, response, body) {
         var info = JSON.parse(body);
@@ -39,6 +45,7 @@ app.get('/:code', function(req, res) {
         	console.log( "Redirect to " + info.objects[0].url );
         	res.redirect(302, info.objects[0].url);
         } else {
+            res.send("No Records Found.")
         	res.end();
         }
 
@@ -49,6 +56,13 @@ app.get('/:code', function(req, res) {
             }
     });
 
+});
+
+/***********************************************************
+    Creating Routes for stats
+***********************************************************/
+app.get('/mytest/:id(^[a-z]{0,10}$)', function(req, res){
+    res.send("Status");
 });
 
 
